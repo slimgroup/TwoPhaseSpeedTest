@@ -13,7 +13,7 @@ TITLE
 
 DIMENS 
 -- X Y Z
-16 16 16 /
+256 256 256 /
 
 EQLDIMS
 /
@@ -49,30 +49,30 @@ NOECHO
 INIT
 
 DX 
-  4096*5 /
+  16777216*8 /
 
 DY 
-  4096*5 /
+  16777216*8 /
 
 DZ 
-  4096*5 /
+  16777216*8 /
 
 TOPS
-  4096*0.0 /
+  16777216*0.0 /
 
 PORO
-4096*0.3 /
+16777216*0.3 /
 
 PERMX
-4096*500.0
+16777216*500.0
 /
 
 PERMY
-4096*500.0
+16777216*500.0
 /
 
 PERMZ
-4096*500.0
+16777216*500.0
 /
 
 ----------------------------------------------------------------------------
@@ -135,14 +135,14 @@ RTEMPVD
 -- Reservoir temperature vs depth
 -- depth value [m], temperature [C]
   0 45
-  200 45
+  2048 45
 /
 
 RSVD
 -- dissolved gas oil ratio vs depth
 -- depth value [m], dissolved gas-oil ratio
   0 0.0
-  200 0.0 /
+  2048 0.0 /
 
 RPTRST
  'BASIC=2' 'ALLPROPS'/
@@ -155,18 +155,17 @@ SUMMARY
 SCHEDULE
 ----------------------------------------------------------------------------
 
-
 RPTRST
  'BASIC=2' 'ALLPROPS'/
 
 WELSPECS
 -- Wname Gname IWH JWH Z_BHP Phase N/A N/A ShutIn Xflow
-	'INJ'	'G1'	8  8	1*	'GAS' /
+	'INJ'	'G1'	128  128	1*	'GAS' /
 /
 
 COMPDAT
 -- Well name, i, j, kmin, kmax, open/shut, sat, ...
-	'INJ'	8  8 	15	15	'OPEN'	1*	1*	0.5 /
+	'INJ'	128  128 	255	255	'OPEN'	1*	1*	0.5 /
 /
 
 WCONINJE
@@ -177,9 +176,9 @@ WCONINJE
 	'INJ'	'GAS'	'OPEN'	'RATE'	15000000 1* 256 /
 /
 
--- Statoil: injection for 25 years
+-- Statoil: injection for 100 years
 TSTEP
- 300*10
+ 365*100
 /
 
 END
