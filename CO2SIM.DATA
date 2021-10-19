@@ -9,7 +9,7 @@
 RUNSPEC
 ----------------------------------------------------------------------------
 TITLE
-   CO2STORE
+   CO2STOR
 
 DIMENS 
 -- X Y Z
@@ -23,7 +23,7 @@ TABDIMS
 
 OIL
 GAS
-CO2STORE
+CO2STOR
 --DISGAS
 --DIFFUSE
 --THERMAL
