@@ -1,7 +1,6 @@
 using JLD2
 using PyPlot
 using SegyIO
-using JUDI
 
 run(`wget -r ftp://slim.gatech.edu/data//synth/Compass/final_velocity_model_ieee_6m.sgy`) # this might take a while
 
@@ -28,28 +27,4 @@ for i = 1:n[1]
 end
 
 v = v_nogas[1:256,1:256,end-255:end]
-idx_ucfmt = find_water_bottom((v.-3500f0).*(v.>3500f0))
-
-K = zeros(Float32, size(v))
-
-for i = 1:256
-    for j = 1:256
-        K[:,:,1:idx_ucfmt[i,j]-1] = 1.03*1f-3*v[:,:,1:idx_ucfmt[i,j]-1].+15f0
-        K[:,:,idx_ucfmt[i,j]:idx_ucfmt[i,j]+8] .= 1f-4
-        K[:,:,idx_ucfmt[i,j]+9:end] = 1.03*1f-3*v[:,:,idx_ucfmt[i,j]+9:end].+200f0
-    end
-end
-
-phi = zeros(Float32,n)
-for i = 1:n[1]
-    for j = 1:n[2]
-        p = Polynomial([-0.0314^2*Kh[i,j],2*0.0314^2*Kh[i,j],-0.0314^2*Kh[i,j],1.527^2])
-        phi[i,j] = minimum(real(roots(p)[findall(real(roots(p)).== roots(p))]))
-    end
-    for j = idx_ucfmt[i]:idx_ucfmt[i]+3
-        phi[i,idx_ucfmt[i]:idx_ucfmt[i]+3] = Float32.(range(0.056,stop=0.1,length=4))
-    end
-end
-
-JLD2.@save "../model/CompassCube.jld2" v
-
+JLD2.@save "256cube_v.jld2" v
