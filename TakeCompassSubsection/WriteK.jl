@@ -18,6 +18,7 @@ for k = 1:256
     end
 end
 
+write(f, " /")
 close(f)
 
 f1 = open("PERMY.txt","w") # do this once
@@ -37,6 +38,7 @@ for k = 1:256
     end
 end
 
+write(f1, " /")
 close(f1)
 
 
@@ -57,6 +59,7 @@ for k = 1:256
     end
 end
 
+write(f2, " /")
 close(f2)
 
 f3 = open("PORO.txt","w") # do this once
@@ -77,5 +80,5 @@ for k = 1:256
         end
     end
 end
-
+write(f3, " /")
 close(f3)
