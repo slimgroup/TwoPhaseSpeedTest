@@ -1,4 +1,4 @@
-wget https://www.dropbox.com/s/eeg3n9vgotibta3/PERMX.txt
-wget https://www.dropbox.com/s/24t5kb0eshe0xz4/PERMY.txt
-wget https://www.dropbox.com/s/1cy720tx3ft0clw/PERMZ.txt
-wget https://www.dropbox.com/s/jcwi5zi9f58fm11/PORO.txt
+wget https://www.dropbox.com/s/lpe7zn2gai7w7v6/PERMX.txt
+wget https://www.dropbox.com/s/lhq6qidvmpmysni/PERMY.txt
+wget https://www.dropbox.com/s/qzp2vwowxi9stci/PERMZ.txt
+wget https://www.dropbox.com/s/4abd8k7jhgfuans/PORO.txt
