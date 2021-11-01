@@ -1,0 +1,141 @@
+RUNSPEC
+    
+TITLE
+    Simulation 
+    
+DIMENS 
+16 16 16 /
+    
+EQLDIMS
+    1 100 50 1 50
+/
+    
+TABDIMS
+    1 1 40 20 2 20
+/
+    
+WELLDIMS
+    1 1 1 1
+/
+    
+OIL
+GAS
+CO2STOR
+    
+METRIC
+UNIFOUT
+START 
+    1 'JAN' 2000
+/
+------------------------------------------------------
+GRID
+    
+INIT
+
+DX 
+    4096*400.0 /
+
+DY  
+    4096*400.0 /
+
+DZ 
+    4096*256.0 /
+
+TOPS
+    4096*510.0 /
+    
+INCLUDE
+    'PERMX.txt'
+/
+
+INCLUDE
+    'PERMY.txt'
+/
+
+INCLUDE
+    'PERMZ.txt'
+/
+
+INCLUDE
+    'PORO.txt'
+/
+    
+------------------------------------------------------
+------------------------------------------------------
+PROPS
+    
+ROCK
+    1.0e+01 1.6e-06
+/
+    
+-- Brooks-Corey with coefficient 2.8 and
+-- entry pressure 2.5kPa (Cavanagh. A. 2013)
+SGOF
+-- Column 1: gas saturation
+-- Column 2: gas relative permeability
+-- Column 3: oil relative permeability when oil, gas and connate water are present
+-- Column 4: oil-gas capillary pressure
+    0.0	0.0	1.0 	0.025
+    0.1	0.0     0.740	0.026
+    0.2	0.009	0.528	0.027
+    0.3	0.030	0.359	0.028
+    0.4	0.070	0.230	0.030
+    0.5	0.136	0.136	0.032
+    0.6	0.230	0.070	0.035
+    0.7	0.359	0.030	0.038
+    0.8	0.528	0.009	0.044
+    0.9	0.740	0.000	0.057 /
+    
+SALINITY
+    0.7 / --35-40g/l  -> 35-40g /kg -> 0.63-0.72 mol/g
+     
+---------------------------------------------------------
+REGIONS
+---------------------------------------------------------
+    
+------------------------------------------------------
+SOLUTION
+    
+EQUIL
+    8.6300e+02 1.465583e+02  5.050e+03 0.0 1.0e+02 0.0  1 0 0 / 
+/
+    
+RSVD
+    510.0 0.0
+    4606.0 0.0
+/
+    
+RTEMPVD
+    800 32.7134 
+    1000 41
+/
+------------------------------------------------------
+SUMMARY
+    
+-----------------------------------------------------
+SCHEDULE
+RPTSCHED
+PRES SGAS RS WELLS
+/
+RPTRST
+BASIC=1
+/
+    
+WELSPECS
+    Injector I 8 8 0.0e+00 WATER 0 STD SHUT NO 0 SEG 0/
+    /
+    
+    COMPDAT
+    Injector 8 8 6 6 OPEN -1 8.5107288246779274e+02 2.0e-01 -1.0 0 1* Y -1.0/
+    /
+    
+    WCONINJE
+    Injector GAS OPEN RATE 9.685900096859e6 3* 0 /
+    /
+
+TSTEP
+    2*1
+    /
+    
+
+END
