@@ -22,4 +22,4 @@ qrate = 7
 time = 2
 dt = 1
 
-TwoPhase(K, phi, qinj, qrate, d, time, dt; o=(0f0,0f0,(341-256)*6f0))
+sat, p = TwoPhase(K, phi, qinj, qrate, d, time, dt; o=(0f0,0f0,(341-256)*6f0))

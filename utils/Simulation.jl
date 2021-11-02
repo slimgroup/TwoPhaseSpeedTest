@@ -33,18 +33,17 @@ function ReadResults(;name="CO2SIMULATION")
     import numpy as np
     ###################################################################################################
     # Read eclipse files
-    name = "CO2SIMULATION"
-    # Load grid
-    grid = EclGrid(name + ".EGRID")
-    shape = (grid.nx, grid.ny, grid.nz)[::-1]
-    # Load snapshots
-    rst_file = EclRestartFile(grid, name + ".UNRST")
-    p = rst_file['PRESSURE'].numpy_view()
-    sat = rst_file['PRESSURE'].numpy_view()
+    def readecl(name):
+        # Load grid
+        grid = EclGrid(name + ".EGRID")
+        shape = (grid.nx, grid.ny, grid.nz)[::-1]
+        # Load snapshots
+        rst_file = EclRestartFile(grid, name + ".UNRST")
+        sat = [rst_file['SGAS'][i].numpy_view().reshape(shape) for i in range(len(rst_file['SGAS']))]
+        p = [rst_file['PRESSURE'][i].numpy_view().reshape(shape) for i in range(len(rst_file['PRESSURE']))]
+        return sat, p
     """
-    sat = py"sat"
-    p = py"p"
-    return sat, p
+    return py"readecl"(name)
 end
 
 function WriteTxtFile(var::Array{T,3}; name="PERMX") where T
