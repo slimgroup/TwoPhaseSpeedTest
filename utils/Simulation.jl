@@ -1,4 +1,4 @@
-function TwoPhase(Kx::Array{T,3}, ϕ::Array{T,3}, qinj::Tuple{T1, T1, T1}, qrate::Number, d::Tuple{T2, T2, T2}, time::Number, dt::Number; Ky=nothing, Kz=nothing, o=nothing) where {T, T1, T2}
+function TwoPhase(Kx::Array{T,3}, ϕ::Array{T,3}, qinj::Tuple{T1, T1, T1}, qrate::Number, d::Tuple{T2, T2, T2}, time::Number, nt::Int; Ky=nothing, Kz=nothing, o=nothing) where {T, T1, T2}
     "Kx permeability, ϕ porosity, qinj injection coordinate [m], qrate injection rate [Mt/y]"
 
     if isnothing(Ky)
@@ -8,7 +8,7 @@ function TwoPhase(Kx::Array{T,3}, ϕ::Array{T,3}, qinj::Tuple{T1, T1, T1}, qrate
         Kz = Kx
     end
     if isnothing(o)
-        o = zeros(Float32, length(size(Kx)))
+        o = zeros(Float32, 3)
     end
 
     WriteTxtFile(Kx; name="PERMX")
@@ -17,10 +17,34 @@ function TwoPhase(Kx::Array{T,3}, ϕ::Array{T,3}, qinj::Tuple{T1, T1, T1}, qrate
     WriteTxtFile(ϕ; name="PORO")
 
     n = size(Kx)
-    WriteDATAFile(qinj, qrate, n, d, o, time, dt;
+    WriteDATAFile(qinj, qrate, n, d, o, time, nt;
     PERMXtxt="PERMX.txt", PERMYtxt="PERMY.txt", PERMZtxt="PERMZ.txt", POROtxt="PORO.txt", name="CO2SIMULATION")
     run(`flow CO2SIMULATION.DATA`)
     sat, p = ReadResults(; name="CO2SIMULATION")
+
+    return sat, p
+end
+
+function TwoPhase(Kx::Array{T,2}, ϕ::Array{T,2}, qinj::Tuple{T1, T1}, qrate::Number, d::Tuple{T2, T2, T2}, time::Number, nt::Int; Ky=nothing, Kz=nothing, o=nothing) where {T, T1, T2}
+    n = size(Kx)
+    if isnothing(Ky)
+        Ky = reshape(Kx,n[1],1,n[2])
+    else
+        Ky = reshape(Ky,n[1],1,n[2])
+    end
+    if isnothing(Kz)
+        Kz = reshape(Kx,n[1],1,n[2])
+    else
+        Kz = reshape(Kz,n[1],1,n[2])
+    end
+    if isnothing(o)
+        o = zeros(Float32, 3)
+    else
+        o = (o[1],0f0,o[2])
+    end
+    sat, p = TwoPhase(reshape(Kx,n[1],1,n[2]), reshape(ϕ,n[1],1,n[2]), (qinj[1],d[2]/2,qinj[2]), qrate, d, time, nt; Ky=Ky, Kz=Kz, o=o)
+    sat = [dropdims(sat[i], dims=2) for i = 1:length(sat)]
+    p = [dropdims(p[i], dims=2) for i = 1:length(p)]
 
     return sat, p
 end
@@ -43,7 +67,10 @@ function ReadResults(;name="CO2SIMULATION")
         p = [rst_file['PRESSURE'][i].numpy_view().reshape(shape) for i in range(len(rst_file['PRESSURE']))]
         return sat, p
     """
-    return py"readecl"(name)
+    sat, p = py"readecl"(name)
+    sat = permutedims.(sat, [[3,2,1] for i = 1:length(sat)])
+    p = permutedims.(p, [[3,2,1] for i = 1:length(sat)])
+    return sat, p
 end
 
 function ReadInitFile(;name="CO2SIMULATION")
@@ -63,7 +90,10 @@ function ReadInitFile(;name="CO2SIMULATION")
         K = init_file['PERMX'][0].numpy_view().reshape(shape)
         return K, ϕ
     """
-    return py"readeclinit"(name)
+    K, ϕ = py"readeclinit"(name)
+    K = permutedims(K, [3,2,1])
+    ϕ = permutedims(ϕ, [3,2,1])
+    return K, ϕ
 end
 
 function WriteTxtFile(var::Array{T,3}; name="PERMX") where T
@@ -94,7 +124,7 @@ function WriteTxtFile(var::Array{T,2}; name="PERMX.txt") where T
     WriteTxtFile(reshape(var,size(var,1),1,size(var,2)); name=name)
 end
 
-function WriteDATAFile(qinj::Tuple{T1, T1, T1}, qrate::Number, n::Tuple{Int, Int, Int}, d::Tuple{T3, T3, T3}, o::Tuple{T2, T2, T2}, time::Number, dt::Number;
+function WriteDATAFile(qinj::Tuple{T1, T1, T1}, qrate::Number, n::Tuple{Int, Int, Int}, d::Tuple{T3, T3, T3}, o::Tuple{T2, T2, T2}, time::Number, nt::Int;
     PERMXtxt::String = "PERMX.txt", PERMYtxt::String = "PERMY.txt", PERMZtxt::String = "PERMZ.txt", POROtxt::String = "PORO.txt", name="CO2SIMULATION") where {T1, T2, T3}
     
     println("Writing $(name).txt")
@@ -146,7 +176,7 @@ $(n[1]) $(n[2]) $(n[3]) /"
     /"
 
     TSTEP = "TSTEP
-    $(Int(round(365.25*time/dt)))*$(dt)
+    $(nt)*$(time*365.25/nt)
     /
     "
 
