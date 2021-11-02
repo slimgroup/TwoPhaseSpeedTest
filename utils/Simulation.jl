@@ -46,6 +46,26 @@ function ReadResults(;name="CO2SIMULATION")
     return py"readecl"(name)
 end
 
+function ReadInitFile(;name="CO2SIMULATION")
+    py"""
+    from ecl.grid import EclGrid, EclRegion
+    from ecl.eclfile import EclFile, EclRestartFile
+    import matplotlib.pyplot as plt
+    import numpy as np
+    ###################################################################################################
+    # Read eclipse files
+    def readeclinit(name):
+        # Load grid
+        grid = EclGrid(name + ".EGRID")
+        shape = (grid.nx, grid.ny, grid.nz)[::-1]
+        init_file = EclFile(name + ".INIT")
+        ϕ = init_file['PORO'][0].numpy_view().reshape(shape)
+        K = init_file['PERMX'][0].numpy_view().reshape(shape)
+        return K, ϕ
+    """
+    return py"readeclinit"(name)
+end
+
 function WriteTxtFile(var::Array{T,3}; name="PERMX") where T
     
     println("Writing $(name).txt")
@@ -126,7 +146,7 @@ $(n[1]) $(n[2]) $(n[3]) /"
     /"
 
     TSTEP = "TSTEP
-    $(Int(round(time/dt)))*$(dt)
+    $(Int(round(365.25*time/dt)))*$(dt)
     /
     "
 
