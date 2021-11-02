@@ -17,9 +17,9 @@ end
 
 n = (16, 16, 16)
 d = (400f0, 400f0, 256f0)
-qinj = (d[1]*n[1]/2, d[2]*n[2]/2, d[3]*n[3]/2)
+qinj = (d[1]*n[1]/2, d[2]*n[2]/2, d[3]*n[3]+(341-256)*6f0)
 qrate = 7
-time = 2
+time = 100
 dt = 1
 
 sat, p = TwoPhase(K, phi, qinj, qrate, d, time, dt; o=(0f0,0f0,(341-256)*6f0))
