@@ -10,7 +10,7 @@ K[:,:,39:end] .= 200f0
 
 #K = Float32.(imfilter(K, Kernel.gaussian((2,2,2))))
 
-phi = zeros(Float32, n)
+phi = 0.36f0*ones(Float32, n)
 #=
 for i = 1:n[1]
     for j = 1:n[2]
@@ -21,13 +21,12 @@ for i = 1:n[1]
     end
 end
 =#
-phi .= 0.36f0
 
 d = (100f0, 100f0, 24f0)
 qinj = (d[1]*n[1]/2, d[2]*n[2]/2, d[3]*n[3]+(341-256)*6f0)
 qrate = 7
 time = 80
-nt = 1000
+nt = 10
 
 sat, p = TwoPhase(K, phi, qinj, qrate, d, time, nt; o=(0f0,0f0,(341-256)*6f0))
 
