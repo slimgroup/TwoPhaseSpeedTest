@@ -25,7 +25,7 @@ end
 d = (100f0, 100f0, 24f0)
 qinj = (d[1]*n[1]/2, d[2]*n[2]/2, d[3]*n[3]+(341-256)*6f0)
 qrate = 7
-time = 80
+time = 40
 nt = 10
 
 sat, p = TwoPhase(K, phi, qinj, qrate, d, time, nt; o=(0f0,0f0,(341-256)*6f0))
