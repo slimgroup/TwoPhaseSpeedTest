@@ -4,8 +4,8 @@ include("../utils/plotting.jl")
 
 n = (64, 64, 64)
 K = zeros(Float32, n)
-K[:,:,1:32] .= 15f0
-K[:,:,33:38] .= 1f-4
+K[:,:,1:36] .= 15f0
+K[:,:,37:38] .= 1f-2
 K[:,:,39:end] .= 200f0
 
 #K = Float32.(imfilter(K, Kernel.gaussian((2,2,2))))
@@ -23,9 +23,9 @@ end
 =#
 
 d = (100f0, 100f0, 24f0)
-qinj = (d[1]*n[1]/2, d[2]*n[2]/2, d[3]*n[3]+(341-256)*6f0)
+qinj = (d[1]*n[1]/2, d[2]*n[2]/2, d[3]*n[3]+(341-256)*6f0-500f0)
 qrate = 7
-time = 40
+time = 100
 nt = 10
 
 sat, p = TwoPhase(K, phi, qinj, qrate, d, time, nt; o=(0f0,0f0,(341-256)*6f0))
@@ -34,5 +34,5 @@ plot_3D(reverse(sat[end],dims=3))
 plot_3D(reverse(K,dims=3))
 plot_3D(reverse(phi,dims=3))
 
-figure();imshow(K[:,16,:]')
-figure();imshow(sat[end][:,16,:]')
+figure();imshow(K[:,32,:]')
+figure();imshow(sat[end][:,32,:]')
