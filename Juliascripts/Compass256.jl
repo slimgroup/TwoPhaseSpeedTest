@@ -1,24 +1,15 @@
-using PyPlot, JLD2, Polynomials, PyCall, GLMakie, Images
+using PyPlot, JLD2, Polynomials, PyCall, Images
 include("../utils/Simulation.jl")
 include("../utils/plotting.jl")
 
-n = (256, 256, 256)
-JLD2.@load "256K.jld2"
+n = (128, 128, 128)
+JLD2.@load "256Kphi.jld2"
 
-#K = Float32.(imfilter(K, Kernel.gaussian((2,2,2))))
+K = K[1:2:end,1:2:end,1:2:end]
+phi = phi[1:2:end,1:2:end,1:2:end]
 
-phi = 0.36f0*ones(Float32, n)
-
-for i = 1:n[1]
-    for j = 1:n[2]
-        for k = 1:n[3]
-            p = Polynomial([-0.0314^2*K[i,j,k],2*0.0314^2*K[i,j,k],-0.0314^2*K[i,j,k],1.527^2])
-            phi[i,j,k] = minimum(real(roots(p)[findall(real(roots(p)).== roots(p))]))
-        end
-    end
-end
-
-d = (25f0, 25f0, 6f0)
+#K = Float32.(imfilter(K, Kernel.gaussian((2,2,2))
+d = (50f0, 50f0, 12f0)
 qinj = (d[1]*n[1]/2, d[2]*n[2]/2, d[3]*n[3]+(341-256)*6f0-300f0)
 qrate = 7
 time = 80
