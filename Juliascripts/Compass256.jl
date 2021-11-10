@@ -2,11 +2,8 @@ using PyPlot, JLD2, Polynomials, PyCall, GLMakie, Images
 include("../utils/Simulation.jl")
 include("../utils/plotting.jl")
 
-n = (64, 64, 64)
-K = zeros(Float32, n)
-K[:,:,1:36] .= 15f0
-K[:,:,37:38] .= 1f-3
-K[:,:,39:end] .= 5000f0
+n = (256, 256, 256)
+JLD2.@load "256K.jld2"
 
 #K = Float32.(imfilter(K, Kernel.gaussian((2,2,2))))
 
@@ -21,17 +18,18 @@ for i = 1:n[1]
     end
 end
 
-d = (100f0, 100f0, 24f0)
-qinj = (d[1]*n[1]/2, d[2]*n[2]/2, d[3]*n[3]+(341-256)*6f0-500f0)
+d = (25f0, 25f0, 6f0)
+qinj = (d[1]*n[1]/2, d[2]*n[2]/2, d[3]*n[3]+(341-256)*6f0-300f0)
 qrate = 7
 time = 80
 nt = 10
 
 sat, p = TwoPhase(K, phi, qinj, qrate, d, time, nt; o=(0f0,0f0,(341-256)*6f0))
 
-figure();imshow(K[:,32,:]')
-figure();imshow(sat[end][:,32,:]')
+JLD2.@save "satpCompass256.jld2" sat p
 
+#figure();imshow(K[:,32,:]')
+#figure();imshow(sat[end][:,32,:]')
 
 #plot_3D(reverse(sat[end],dims=3))
 #plot_3D(reverse(K,dims=3))
