@@ -42,7 +42,7 @@ function TwoPhase(Kx::Array{T,2}, ϕ::Array{T,2}, qinj::Tuple{T1, T1}, qrate::Nu
     else
         o = (o[1],0f0,o[2])
     end
-    sat, p = TwoPhase(reshape(Kx,n[1],1,n[2]), reshape(ϕ,n[1],1,n[2]), (qinj[1],d[2]/2,qinj[2]), qrate, d, time, nt; Ky=Ky, Kz=Kz, o=o)
+    sat, p = TwoPhase(reshape(Kx,n[1],1,n[2]), reshape(ϕ,n[1],1,n[2]), (qinj[1],T1(d[2]/2),qinj[2]), qrate, d, time, nt; Ky=Ky, Kz=Kz, o=o)
     sat = [dropdims(sat[i], dims=2) for i = 1:length(sat)]
     p = [dropdims(p[i], dims=2) for i = 1:length(p)]
 
@@ -159,7 +159,10 @@ $(n[1]) $(n[2]) $(n[3]) /"
     '$(POROtxt)'
 /"
 
-    qgrid = Int.(round.((qinj.-o)./d))
+    println("qinj=", qinj)
+    println("o=", o)
+    println("d=", d)
+    qgrid = Int.(ceil.((qinj.-o)./d))
 
     rate = qrate * 1f6 * 1f3 / 1.98 / 365
 
@@ -169,6 +172,7 @@ $(n[1]) $(n[2]) $(n[3]) /"
     
     COMPDAT
     Injector $(qgrid[1]) $(qgrid[2]) $(qgrid[3]) $(qgrid[3]) OPEN -1 8.5107288246779274e+02 2.0e-01 -1.0 0 1* Y -1.0/
+    Injector $(qgrid[1]) $(qgrid[2]) $(qgrid[3]) $(qgrid[3]) OPEN -1 4.0622380088359796e+02 2.0e-01 -1.0 0 1* Y -1.0/
     /
     
     WCONINJE
@@ -203,7 +207,7 @@ WELLDIMS
     
 OIL
 GAS
-CO2STOR
+CO2STORE
     
 METRIC
 UNIFOUT
