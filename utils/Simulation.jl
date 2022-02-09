@@ -117,7 +117,7 @@ function WriteTxtFile(var::Matrix{T}; name="PERMX") where T # assume X*Z
 end
 
 function WriteTxtFile(var::Vector{T}; name="PERMX") where T # assume Z
-    WriteTxtFile(reshape(var,1,1,size(var,1),1,1); name=name)
+    WriteTxtFile(reshape(var,1,1,size(var,1)); name=name)
 end
 
 function WriteTOPS(TOPS::T, n::Tuple{Int, Int, Int}) where T <: Number  # single value for the top
