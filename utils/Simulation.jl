@@ -1,4 +1,4 @@
-function TwoPhase(Kx::Array{T,3}, ϕ::Array{T,3}, qinj::Tuple{T1, T1, T1}, qrate::Number, d::Tuple{T2, T2, T2}, time::Number, nt::Int; Ky=nothing, Kz=nothing, o=nothing) where {T, T1, T2}
+function TwoPhase(Kx::Array{T,3}, ϕ::Array{T,3}, qinj::Tuple{T1, T1, T1}, qrate::Number, d::Tuple{T2, T2, T2}, time::Number, nt::Int; Ky=nothing, Kz=nothing, TOPS=nothing) where {T, T1, T2}
     "Kx permeability, ϕ porosity, qinj injection coordinate [m], qrate injection rate [Mt/y]"
 
     if isnothing(Ky)
@@ -7,9 +7,6 @@ function TwoPhase(Kx::Array{T,3}, ϕ::Array{T,3}, qinj::Tuple{T1, T1, T1}, qrate
     if isnothing(Kz)
         Kz = Kx
     end
-    if isnothing(o)
-        o = zeros(Float32, 3)
-    end
 
     WriteTxtFile(Kx; name="PERMX")
     WriteTxtFile(Ky; name="PERMY")
@@ -17,15 +14,15 @@ function TwoPhase(Kx::Array{T,3}, ϕ::Array{T,3}, qinj::Tuple{T1, T1, T1}, qrate
     WriteTxtFile(ϕ; name="PORO")
 
     n = size(Kx)
-    WriteDATAFile(qinj, qrate, n, d, o, time, nt;
-    PERMXtxt="PERMX.txt", PERMYtxt="PERMY.txt", PERMZtxt="PERMZ.txt", POROtxt="PORO.txt", name="CO2SIMULATION")
+    WriteDATAFile(qinj, qrate, n, d, time, nt;
+    TOPS=TOPS, PERMXtxt="PERMX.txt", PERMYtxt="PERMY.txt", PERMZtxt="PERMZ.txt", POROtxt="PORO.txt", name="CO2SIMULATION")
     run(`flow CO2SIMULATION.DATA`)
     sat, p = ReadResults(; name="CO2SIMULATION")
 
     return sat, p
 end
 
-function TwoPhase(Kx::Array{T,2}, ϕ::Array{T,2}, qinj::Tuple{T1, T1}, qrate::Number, d::Tuple{T2, T2, T2}, time::Number, nt::Int; Ky=nothing, Kz=nothing, o=nothing) where {T, T1, T2}
+function TwoPhase(Kx::Array{T,2}, ϕ::Array{T,2}, qinj::Tuple{T1, T1}, qrate::Number, d::Tuple{T2, T2, T2}, time::Number, nt::Int; Ky=nothing, Kz=nothing, TOPS=nothing) where {T, T1, T2}
     n = size(Kx)
     if isnothing(Ky)
         Ky = reshape(Kx,n[1],1,n[2])
@@ -37,12 +34,7 @@ function TwoPhase(Kx::Array{T,2}, ϕ::Array{T,2}, qinj::Tuple{T1, T1}, qrate::Nu
     else
         Kz = reshape(Kz,n[1],1,n[2])
     end
-    if isnothing(o)
-        o = zeros(Float32, 3)
-    else
-        o = (o[1],0f0,o[2])
-    end
-    sat, p = TwoPhase(reshape(Kx,n[1],1,n[2]), reshape(ϕ,n[1],1,n[2]), (qinj[1],T1(d[2]/2),qinj[2]), qrate, d, time, nt; Ky=Ky, Kz=Kz, o=o)
+    sat, p = TwoPhase(reshape(Kx,n[1],1,n[2]), reshape(ϕ,n[1],1,n[2]), (qinj[1],T1(d[2]/2),qinj[2]), qrate, d, time, nt; Ky=Ky, Kz=Kz, TOPS=TOPS)
     sat = [dropdims(sat[i], dims=2) for i = 1:length(sat)]
     p = [dropdims(p[i], dims=2) for i = 1:length(p)]
 
@@ -120,14 +112,68 @@ function WriteTxtFile(var::Array{T,3}; name="PERMX") where T
 
 end
 
-function WriteTxtFile(var::Array{T,2}; name="PERMX.txt") where T
+function WriteTxtFile(var::Matrix{T}; name="PERMX") where T # assume X*Z
     WriteTxtFile(reshape(var,size(var,1),1,size(var,2)); name=name)
 end
 
-function WriteDATAFile(qinj::Tuple{T1, T1, T1}, qrate::Number, n::Tuple{Int, Int, Int}, d::Tuple{T3, T3, T3}, o::Tuple{T2, T2, T2}, time::Number, nt::Int;
-    PERMXtxt::String = "PERMX.txt", PERMYtxt::String = "PERMY.txt", PERMZtxt::String = "PERMZ.txt", POROtxt::String = "PORO.txt", name="CO2SIMULATION") where {T1, T2, T3}
+function WriteTxtFile(var::Vector{T}; name="PERMX") where T # assume Z
+    WriteTxtFile(reshape(var,1,1,size(var,1),1,1); name=name)
+end
+
+function WriteTOPS(TOPS::T, n::Tuple{Int, Int, Int}) where T <: Number  # single value for the top
+    TOPS1 = "TOPS
+    $(n[1]*n[2])*$TOPS /"
+
+    return TOPS1
+end
+
+function WriteTOPS(TOPS::Vector{T}, n::Tuple{Int, Int, Int}) where T <: Number    # vector top, assume 2D X*Z
+    
+    WriteTxtFile(TOPS; name="TOPS")
+    TOPS1 = "INCLUDE
+    TOPS.txt /"
+
+    return TOPS1
+end
+
+function WriteTOPS(TOPS::Matrix{T}, n::Tuple{Int, Int, Int}) where T <: Number  # matrix top, assume X*Y*Z
+    
+    WriteTxtFile(TOPS; name="TOPS")
+    TOPS1 = "INCLUDE
+    TOPS.txt /"
+
+    return TOPS1
+end
+
+function WriteTOPS(TOPS, n::Tuple{Int, Int, Int})   # matrix top, assume X*Y*Z
+    
+    isnothing(TOPS) || @warn "Type of TOPS not supported"
+    return WriteTOPS(0, n)
+end
+
+function getqgrid(qinj::Tuple{T1, T1, T1}, d::Tuple{T3, T3, T3}, TOPS::T) where {T, T1, T3}
+    qgridxy = Int.(ceil.(qinj[1:2]./d[1:2]))
+    qgridz = Int(ceil((qinj[end]-TOPS)/d[3]))
+    return (qgridxy[1], qgridxy[2], qgridz)
+end
+
+function getqgrid(qinj::Tuple{T1, T1, T1}, d::Tuple{T3, T3, T3}, TOPS::Vector{T}) where {T, T1, T3}
+    qgridxy = Int.(ceil.(qinj[1:2]./d[1:2]))
+    qgridz = Int(ceil((qinj[end]-TOPS[qgridxy[1]])/d[3]))
+    return (qgridxy[1], qgridxy[2], qgridz)
+end
+
+function getqgrid(qinj::Tuple{T1, T1, T1}, d::Tuple{T3, T3, T3}, TOPS::Matrix{T}) where {T, T1, T3}
+    qgridxy = Int.(ceil.(qinj[1:2]./d[1:2]))
+    qgridz = Int(ceil((qinj[end]-TOPS[qgridxy[1], qgridxy[2]])/d[3]))
+    return (qgridxy[1], qgridxy[2], qgridz)
+end
+
+function WriteDATAFile(qinj::Tuple{T1, T1, T1}, qrate::Number, n::Tuple{Int, Int, Int}, d::Tuple{T3, T3, T3}, time::Number, nt::Int;
+    TOPS=nothing, PERMXtxt::String = "PERMX.txt", PERMYtxt::String = "PERMY.txt", PERMZtxt::String = "PERMZ.txt", POROtxt::String = "PORO.txt", name="CO2SIMULATION") where {T1, T2, T3}
     
     println("Writing $(name).txt")
+
     DIMENS = "DIMENS 
 $(n[1]) $(n[2]) $(n[3]) /"
 
@@ -140,8 +186,7 @@ $(n[1]) $(n[2]) $(n[3]) /"
     DZ = "DZ 
     $(prod(n))*$(d[3]) /"
 
-    TOPS = "TOPS
-    $(prod(n))*$(o[3]) /"
+    TOPS1 = WriteTOPS(TOPS, n)
 
     PERMX = "INCLUDE
     '$(PERMXtxt)'
@@ -159,12 +204,9 @@ $(n[1]) $(n[2]) $(n[3]) /"
     '$(POROtxt)'
 /"
 
-    println("qinj=", qinj)
-    println("o=", o)
-    println("d=", d)
-    qgrid = Int.(ceil.((qinj.-o)./d))
+    qgrid = getqgrid(qinj, d, TOPS)
 
-    rate = qrate * 1f6 * 1f3 / 1.98 / 365
+    rate = qrate * 1f6 * 1f3 / 1.98 / 365.25
 
     WELL = "WELSPECS
     Injector I $(qgrid[1]) $(qgrid[2]) 0.0e+00 WATER 0 STD SHUT NO 0 SEG 0/
@@ -225,7 +267,7 @@ $(DY)
 
 $(DZ)
 
-$(TOPS)
+$(TOPS1)
     
 $(PERMX)
 
@@ -276,8 +318,8 @@ EQUIL
 /
     
 RSVD
-    $(o[end]) 0.0
-    $(n[end]*d[end]+o[end]) 0.0
+    0.0 0.0
+    $(n[end]*d[end]) 0.0
 /
     
 RTEMPVD

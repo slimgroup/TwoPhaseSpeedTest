@@ -13,7 +13,7 @@ phi = 0.35f0 * ones(Float32, n)
 
 qinj = (d[1]*n[1]/2f0, d[3]*n[2]+(341-256)*6f0-25f0)
 qrate = 7
-time = 1
+time = 100
 nt = 10
 
-sat, p = TwoPhase(K, phi, qinj, qrate, d, time, nt; o=(0f0,(341-256)*6f0))
+sat, p = TwoPhase(K, phi, qinj, qrate, d, time, nt; TOPS= (341-256)*6f0)

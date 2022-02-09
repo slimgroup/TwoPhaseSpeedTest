@@ -4,30 +4,20 @@ include("../utils/plotting.jl")
 
 n = (64, 64, 64)
 K = zeros(Float32, n)
-K[:,:,1:36] .= 15f0
-K[:,:,37:38] .= 1f-3
-K[:,:,39:end] .= 5000f0
-
-#K = Float32.(imfilter(K, Kernel.gaussian((2,2,2))))
-
+K[:,:,1:26] .= 15f0
+K[:,:,27:38] .= 1f-2
+K[:,:,39:end] .= 2500f0
 phi = 0.36f0*ones(Float32, n)
 
-for i = 1:n[1]
-    for j = 1:n[2]
-        for k = 1:n[3]
-            p = Polynomial([-0.0314^2*K[i,j,k],2*0.0314^2*K[i,j,k],-0.0314^2*K[i,j,k],1.527^2])
-            phi[i,j,k] = minimum(real(roots(p)[findall(real(roots(p)).== roots(p))]))
-        end
-    end
-end
-
-d = (100f0, 100f0, 24f0)
-qinj = (d[1]*n[1]/2, d[2]*n[2]/2, d[3]*n[3]+(341-256)*6f0-500f0)
+d = (50f0, 50f0, 0.5f0)
+qinj = (d[1]*n[1]/2, d[2]*n[2]/2, d[3]*n[3]+(341-256)*6f0-1f0)
 qrate = 7
-time = 80
+time = 2
 nt = 10
 
-sat, p = TwoPhase(K, phi, qinj, qrate, d, time, nt; o=(0f0,0f0,(341-256)*6f0))
+TOPS = 10f0*randn(Float32, n[1], n[2]) .+ (341-256)*6f0
+
+sat, p = TwoPhase(K, phi, qinj, qrate, d, time, nt; TOPS=TOPS)
 
 figure();imshow(K[:,32,:]')
 figure();imshow(sat[end][:,32,:]')
