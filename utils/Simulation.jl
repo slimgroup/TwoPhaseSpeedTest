@@ -153,7 +153,11 @@ end
 
 function getqgrid(qinj::Tuple{T1, T1, T1}, d::Tuple{T3, T3, T3}, TOPS::T) where {T, T1, T3}
     qgridxy = Int.(ceil.(qinj[1:2]./d[1:2]))
-    qgridz = Int(ceil((qinj[end]-TOPS)/d[3]))
+    if isnothing(TOPS)
+        qgridz = Int(ceil(qinj[end]/d[3]))
+    else
+        qgridz = Int(ceil((qinj[end]-TOPS)/d[3]))
+    end
     return (qgridxy[1], qgridxy[2], qgridz)
 end
 
