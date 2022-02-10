@@ -1,4 +1,6 @@
-using PyPlot, JLD2, Polynomials, PyCall, GLMakie, Images, MAT
+### compress 3D sleipner to 2D
+
+using PyPlot, JLD2, Polynomials, PyCall, GLMakie, Images, MAT, Statistics
 include("../utils/Simulation.jl")
 include("../utils/plotting.jl")
 
@@ -10,10 +12,12 @@ vars = matread("sleipnertopdz.mat")
 dz = Float32.(vars["dz"])
 tops = Float32.(vars["tops"])
 
-d = (50f0, 50f0, minimum(dz))
-qinj = (d[1]*31/2, d[2]*43/2,d[3]*214+tops[31,43])
-qrate = 1
+K = K[:,1,:]
+ϕ = ϕ[:,1,:]
+d = (50f0, size(tops, 2) * 50f0, vec(dz))
+tops = tops[:,43]
+qinj = (d[1]*31, cumsum(d[3])[214]+tops[31])
+qrate = Float32(1.46/1.38)
 time = 15
 nt = 100
-
-sat, p = TwoPhase(K, ϕ, qinj, qrate, d, time, nt; TOPS=tops)
+sat, p = TwoPhase(K, ϕ, qinj, qrate, d, time, nt; TOPS = tops)
