@@ -1,12 +1,11 @@
 function grid_change(x::Array{T,3}, dz::Vector{T1}, d::T1) where {T, T1}
     # this happens on the 3rd dimension
     @assert size(x,3) == length(dz)
-    stretch = Int.(round.(dz./d))
-    y = zeros(T, size(x,1), size(x,2), sum(stretch))
-    ct = 1
-    for i = 1:size(x,3)
-        copyto!(view(y, :, :,ct:ct+stretch[i]-1), repeat(view(x, :, :, i), 1, 1, stretch[i])) 
-        ct = ct + stretch[i]
+    nz = Int(floor(sum(dz)/d))
+    depth = cumsum(dz)
+    y = zeros(T, size(x,1), size(x,2), nz)
+    for i = 1:nz
+        copyto!(view(y, :, :, i), view(x, :, :, findfirst(depth .>= i * d)))
     end
     return y
 end
