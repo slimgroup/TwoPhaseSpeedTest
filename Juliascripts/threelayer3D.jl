@@ -1,4 +1,4 @@
-using PyPlot, JLD2, Polynomials, PyCall, GLMakie, MAT
+using PyPlot, JLD2, Polynomials, PyCall, MAT
 include("../utils/Simulation.jl")
 include("../utils/plotting.jl")
 
@@ -22,3 +22,8 @@ time = 40
 nt = 10
 
 sat, p = TwoPhase(K, phi, qinj, qrate, d, time, nt; TOPS=tops)
+
+matwrite("threelayer3D.mat", Dict(
+	"sat" => sat,
+	"p" => p
+); compress = true)
